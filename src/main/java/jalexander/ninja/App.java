@@ -1,13 +1,12 @@
 package jalexander.ninja;
 
-/**
- * Hello world!
- *
- */
-public class App 
+import org.jgrapht.*;
+import org.jgrapht.graph.*;
+
+public class App
 {
     public static void main( String[] args )
     {
-        System.out.println( "Hello World!" );
+        Graph<String, DefaultEdge> graph = new SimpleGraph<String, DefaultEdge>(DefaultEdge.class);
     }
 }
