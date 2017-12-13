@@ -1,3 +1,3 @@
 #!/bin/bash
 
-mvn clean compile && mvn exec:java
+mvn compile && mvn exec:java
