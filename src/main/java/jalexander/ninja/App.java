@@ -29,9 +29,18 @@ public class App {
 
             System.out.println("\nSHORTEST PATHS");
             averageShortestPaths(graph);
+            
+			System.out.println("GREEDY");
+			SimpleGraph<Integer, DefaultEdge> graph2 = (SimpleGraph<Integer, DefaultEdge>)graph.clone();
+			greedy(graph2, 10);
 			
-			//greedy(graph, 10);
-			batch_greedy(graph, 10);
+			System.out.println("BATCH GREEDY");
+			graph = (SimpleGraph<Integer, DefaultEdge>)graph.clone();
+			batch_greedy(graph2, 10);
+			
+			System.out.println("PATH SCREENING");
+			graph = (SimpleGraph<Integer, DefaultEdge>)graph.clone();
+			path_screening(graph2, 10);
 			
             DefaultListenableGraph<Integer, DefaultEdge> lGraph = new DefaultListenableGraph<>(graph);
             Visualizer v = new Visualizer(lGraph);
@@ -248,7 +257,8 @@ public class App {
         System.out.println("Time taken: " + (stopTime - startTime));
     }
     
-    public static void path_screening(Graph<Integer, DefaultEdge> graph, int k) {
+    public static void path_screening(SimpleGraph<Integer, DefaultEdge> g, int k) {
+    	SimpleGraph<Integer,DefaultEdge> graph = (SimpleGraph<Integer,DefaultEdge>)g.clone();
     	long startTime = System.currentTimeMillis();
     	double avg_old = averageShortestPaths(graph);
     	System.out.println("Old average: "+ avg_old);
@@ -263,11 +273,15 @@ public class App {
     				GraphPath<Integer, DefaultEdge> p = shortestPaths.getPath(v1,v2);
     				int l = p.getLength();
     				List<Integer> nodes = p.getVertexList();
-    				for(int d = 0; d < l; d++) {
+    				for(int d = 2; d < l; d++) {
     					for(int i = 0; i < l - d; i++) {
     						Integer x = nodes.get(i);
     						Integer y = nodes.get(i + d);
-    						DefaultEdge e = graph.addEdge(v1, v2);
+    						
+    						DefaultEdge e = graph.getEdge(x, y);
+    						if(e == null) {
+    							e = graph.addEdge(x,y);
+    						}
     						Integer score = d - 1;
     						if(scores.containsKey(e)){
     							Integer old_val = scores.get(e);
@@ -276,16 +290,17 @@ public class App {
     						else {
     							scores.put(e, score);
     						}
-    						graph.removeEdge(e);
     					}
     				}
     			}
     		}
     	}
-    	
+//    	System.out.println(scores);
     	List<Map.Entry<DefaultEdge, Integer>> sorted_scores = sortByValue(scores);
+    	int n = sorted_scores.size();
     	
-    	for (int i = 0; i < k; i++) {
+    	for (int i = 1; i <= k; i++) {
+    		System.out.println(sorted_scores.get(n - i));
     		DefaultEdge e = sorted_scores.get(i).getKey();
 			graph.addEdge(graph.getEdgeSource(e), graph.getEdgeTarget(e), e);
     	}
