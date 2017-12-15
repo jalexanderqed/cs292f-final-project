@@ -248,7 +248,73 @@ public class App {
         System.out.println("Time taken: " + (stopTime - startTime));
     }
     
-
+    public static void path_screening(Graph<Integer, DefaultEdge> graph, int k) {
+    	long startTime = System.currentTimeMillis();
+    	double avg_old = averageShortestPaths(graph);
+    	System.out.println("Old average: "+ avg_old);
+    	
+    	HashMap<DefaultEdge, Integer> scores = new HashMap<DefaultEdge, Integer>();
+    	
+    	FloydWarshallShortestPaths<Integer, DefaultEdge> shortestPaths = new FloydWarshallShortestPaths<>(graph);
+    	
+    	for (Integer v1 : graph.vertexSet()){
+    		for (Integer v2: graph.vertexSet()) {
+    			if(v2 > v1){ //take each pair only once
+    				GraphPath<Integer, DefaultEdge> p = shortestPaths.getPath(v1,v2);
+    				int l = p.getLength();
+    				List<Integer> nodes = p.getVertexList();
+    				for(int d = 0; d < l; d++) {
+    					for(int i = 0; i < l - d; i++) {
+    						Integer x = nodes.get(i);
+    						Integer y = nodes.get(i + d);
+    						DefaultEdge e = graph.addEdge(v1, v2);
+    						Integer score = d - 1;
+    						if(scores.containsKey(e)){
+    							Integer old_val = scores.get(e);
+    							scores.put(e, old_val + score);
+    						}
+    						else {
+    							scores.put(e, score);
+    						}
+    						graph.removeEdge(e);
+    					}
+    				}
+    			}
+    		}
+    	}
+    	
+    	List<Map.Entry<DefaultEdge, Integer>> sorted_scores = sortByValue(scores);
+    	
+    	for (int i = 0; i < k; i++) {
+    		DefaultEdge e = sorted_scores.get(i).getKey();
+			graph.addEdge(graph.getEdgeSource(e), graph.getEdgeTarget(e), e);
+    	}
+		double avg_new = averageShortestPaths(graph);
+    	long stopTime = System.currentTimeMillis();
+        System.out.println("New average: "+ avg_new);
+        System.out.println("Improvement: " + (avg_old - avg_new));
+        System.out.println("Time taken: " + (stopTime - startTime));
+    }
+    
+	public static <K, V extends Comparable<? super V>> List<Map.Entry<K, V>> sortByValue(Map<K, V> map) {
+		List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
+		Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
+			@Override
+			public int compare(Map.Entry<K, V> e1, Map.Entry<K, V> e2) {
+				return (e1.getValue()).compareTo(e2.getValue());
+			}
+		});
+ 		return list;
+		/*Map<K, V> result = new LinkedHashMap<>();
+		for (Map.Entry<K, V> entry : list) {
+			result.put(entry.getKey(), entry.getValue());
+		}
+ 	
+		return result;*/
+	}
+	
+	
+	
     public static void outputGraph(Graph<Integer, DefaultEdge> graph, String outFileName) {
         File inFile = new File(App.class.getResource(inFileName).getFile());
         File outFile = new File(inFile.getParentFile(), outFileName);
