@@ -192,7 +192,7 @@ public class App {
     	DefaultEdge best_edge = null;
     	for (Integer v1 : graph.vertexSet()) {
             for (Integer v2 : graph.vertexSet()) {
-                if (!v1.equals(v2) && !graph.containsEdge(v1, v2)) {
+                if ((v1 < v2) && !graph.containsEdge(v1, v2)) {
                     DefaultEdge e = graph.addEdge(v1,v2);
                     double avg_new = averageShortestPaths(graph);
                     double improvement = avg_old - avg_new;
@@ -260,7 +260,7 @@ public class App {
     public static void path_screening(SimpleGraph<Integer, DefaultEdge> g, int k) {
     	SimpleGraph<Integer,DefaultEdge> graph = (SimpleGraph<Integer,DefaultEdge>)g.clone();
     	long startTime = System.currentTimeMillis();
-    	double avg_old = averageShortestPaths(graph);
+    	double avg_old = averageShortestPaths(g);
     	System.out.println("Old average: "+ avg_old);
     	
     	HashMap<DefaultEdge, Integer> scores = new HashMap<DefaultEdge, Integer>();
@@ -302,9 +302,9 @@ public class App {
     	for (int i = 1; i <= k; i++) {
     		System.out.println(sorted_scores.get(n - i));
     		DefaultEdge e = sorted_scores.get(i).getKey();
-			graph.addEdge(graph.getEdgeSource(e), graph.getEdgeTarget(e), e);
+			g.addEdge(g.getEdgeSource(e), g.getEdgeTarget(e), e);
     	}
-		double avg_new = averageShortestPaths(graph);
+		double avg_new = averageShortestPaths(g);
     	long stopTime = System.currentTimeMillis();
         System.out.println("New average: "+ avg_new);
         System.out.println("Improvement: " + (avg_old - avg_new));
