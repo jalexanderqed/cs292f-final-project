@@ -29,7 +29,10 @@ public class App {
 
             System.out.println("\nSHORTEST PATHS");
             averageShortestPaths(graph);
-
+			
+			//greedy(graph, 10);
+			batch_greedy(graph, 10);
+			
             DefaultListenableGraph<Integer, DefaultEdge> lGraph = new DefaultListenableGraph<>(graph);
             Visualizer v = new Visualizer(lGraph);
             v.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -155,7 +158,7 @@ public class App {
         return histogram;
     }
 
-    public static void averageShortestPaths(Graph<Integer, DefaultEdge> graph) {
+    public static double averageShortestPaths(Graph<Integer, DefaultEdge> graph) {
         long startTime = System.currentTimeMillis();
         FloydWarshallShortestPaths<Integer, DefaultEdge> shortestPaths = new FloydWarshallShortestPaths<>(graph);
         double totalWeight = 0;
@@ -168,10 +171,83 @@ public class App {
         }
         long stopTime = System.currentTimeMillis();
 
-        System.out.println("Time taken: " + (stopTime - startTime));
-        System.out.println("Number of Paths: " + shortestPaths.getShortestPathsCount());
-        System.out.println("Average: " + (totalWeight / shortestPaths.getShortestPathsCount()));
+        //System.out.println("Time taken: " + (stopTime - startTime));
+        //System.out.println("Number of Paths: " + shortestPaths.getShortestPathsCount());
+        //System.out.println("Average: " + (totalWeight / shortestPaths.getShortestPathsCount()));
+        return totalWeight / shortestPaths.getShortestPathsCount();
     }
+    
+    public static DefaultEdge max_edge(Graph<Integer, DefaultEdge> graph){
+    	double avg_old = averageShortestPaths(graph);
+    	double best_improvement = 0.0;
+    	DefaultEdge best_edge = null;
+    	for (Integer v1 : graph.vertexSet()) {
+            for (Integer v2 : graph.vertexSet()) {
+                if (!v1.equals(v2) && !graph.containsEdge(v1, v2)) {
+                    DefaultEdge e = graph.addEdge(v1,v2);
+                    double avg_new = averageShortestPaths(graph);
+                    double improvement = avg_old - avg_new;
+                    if (improvement > best_improvement){
+                    	best_edge = e;
+                    	best_improvement = improvement;
+                    }
+                    graph.removeEdge(v1,v2);
+                }
+            }
+        }
+        return best_edge;
+    }
+    
+    public static void greedy(Graph<Integer, DefaultEdge> graph, int k) {
+    	long startTime = System.currentTimeMillis();
+    	double avg_old = averageShortestPaths(graph);
+    	System.out.println("Old average: "+ avg_old);
+		for (int i = 0; i < k; i++) {
+			DefaultEdge e = max_edge(graph);
+			graph.addEdge(graph.getEdgeSource(e), graph.getEdgeTarget(e), e);
+		}
+		double avg_new = averageShortestPaths(graph);
+    	long stopTime = System.currentTimeMillis();
+        System.out.println("New average: "+ avg_new);
+        System.out.println("Improvement: " + (avg_old - avg_new));
+        System.out.println("Time taken: " + (stopTime - startTime));
+    }
+    
+    public static void batch_greedy(Graph<Integer, DefaultEdge> graph, int k){
+    	long startTime = System.currentTimeMillis();
+    	double avg_old = averageShortestPaths(graph);
+    	System.out.println("Old average: "+ avg_old);
+		TreeMap<Double,DefaultEdge> edges = new TreeMap<Double,DefaultEdge>();
+		
+		for (Integer v1 : graph.vertexSet()) {
+            for (Integer v2 : graph.vertexSet()) {
+                if (!v1.equals(v2) && !graph.containsEdge(v1, v2)) {
+                    DefaultEdge e = graph.addEdge(v1,v2);
+                    double avg_new = averageShortestPaths(graph);
+                    if (edges.size() < k){
+                    	edges.put(avg_new, e);
+                    }
+                    else if(avg_new < edges.firstEntry().getKey()){
+                    	edges.pollFirstEntry();
+                    	edges.put(avg_new, e);
+                    }
+                    graph.removeEdge(v1,v2);
+                }
+            }
+        }
+		
+		while(edges.size() > 0) {
+			DefaultEdge e = edges.pollFirstEntry().getValue();
+			graph.addEdge(graph.getEdgeSource(e), graph.getEdgeTarget(e), e);
+		}
+		
+		double avg_new = averageShortestPaths(graph);
+    	long stopTime = System.currentTimeMillis();
+        System.out.println("New average: "+ avg_new);
+        System.out.println("Improvement: " + (avg_old - avg_new));
+        System.out.println("Time taken: " + (stopTime - startTime));
+    }
+    
 
     public static void outputGraph(Graph<Integer, DefaultEdge> graph, String outFileName) {
         File inFile = new File(App.class.getResource(inFileName).getFile());
