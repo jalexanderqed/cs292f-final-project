@@ -20,9 +20,10 @@ import java.util.Random;
  * Created by jalex on 12/12/2017.
  */
 public class Visualizer extends JFrame{
-    public Visualizer(ListenableGraph<Integer, org.jgrapht.graph.DefaultEdge> inGraph)
+    public Visualizer(ListenableGraph<Integer, org.jgrapht.graph.DefaultEdge> inGraph,
+                      String wName)
     {
-        super("Visualizer");
+        super(wName);
 
         JGraphModelAdapter<Integer, org.jgrapht.graph.DefaultEdge> adapter = new JGraphModelAdapter<>(inGraph);
         JGraph jGraph = new JGraph(adapter);

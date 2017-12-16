@@ -38,11 +38,13 @@ public class App {
 
             System.out.println("\n\nGAME 1");
 
-            int rounds = 20;
-            int designerAlg = SCREEN;
-            int adversaryAlg = GREEDY;
-            int designerAddsNum = 5;
-            int adversaryRemovesNum = 5;
+            int rounds, designerAlg, adversaryAlg, designerAddsNum, adversaryRemovesNum;
+
+            rounds = 5;
+            designerAlg = SCREEN;
+            adversaryAlg = GREEDY;
+            designerAddsNum = 5;
+            adversaryRemovesNum = 5;
 
             int index = 0;
             File outFile;
@@ -72,8 +74,14 @@ public class App {
                 System.exit(1);
             }
 
+            DefaultListenableGraph<Integer, DefaultEdge> lGraph = new DefaultListenableGraph<>(graph);
+            Visualizer v = new Visualizer(lGraph, "Before");
+            v.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            v.setSize(1000, 1000);
+            v.setVisible(true);
+
             DefaultListenableGraph<Integer, DefaultEdge> lGraph2 = new DefaultListenableGraph<>(graph2);
-            Visualizer v2 = new Visualizer(lGraph2);
+            Visualizer v2 = new Visualizer(lGraph2, "After");
             v2.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             v2.setSize(1000, 1000);
             v2.setVisible(true);
@@ -116,13 +124,7 @@ public class App {
         }
 
         if(out != null){
-            out.println("round for " +
-                    rounds + "_" +
-                    designerAlg + "_" +
-                    adversaryAlg + "_" +
-                    designerAddsNum + "_" +
-                    adversaryRemovesNum +
-                    ",average shortest path length,time");
+            out.println("round,average shortest path length,time");
         }
 
         if(out != null) {
@@ -173,7 +175,7 @@ public class App {
             }
 
             if (output) {
-                System.out.println("Round 1 finished");
+                System.out.println("\n\nRound 1 finished");
                 System.out.println("Old average: " + round_old);
                 System.out.println("New average: " + round_new);
                 System.out.println("Improvement: " + (round_old - round_new));
