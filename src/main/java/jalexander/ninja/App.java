@@ -16,6 +16,13 @@ public class App {
     final static String inFileName = "/large_degree.txt";
     final static int vertsInGraph = 100;
 
+    static boolean output = true;
+
+    final static int GREEDY = 1;
+    final static int BATCH_GREEDY = 2;
+    final static int SCREEN = 3;
+    final static int MULTI_SCREEN = 4;
+
     public static void main(String[] args) {
         SimpleGraph<Integer, DefaultEdge> originalGraph = getGraph();
         //ListenableGraph<Integer, DefaultEdge> graph = getSimpleGraph();
@@ -27,33 +34,108 @@ public class App {
             System.out.println("\nAFTER DOWNSAMPLING");
             histogram(graph, 10);
 
-            System.out.println("\nSHORTEST PATHS");
-            averageShortestPaths(graph);
-            
-			System.out.println("GREEDY");
-			SimpleGraph<Integer, DefaultEdge> graph2 = (SimpleGraph<Integer, DefaultEdge>)graph.clone();
-			greedy(graph2, 10);
-			
-			System.out.println("BATCH GREEDY");
-			graph = (SimpleGraph<Integer, DefaultEdge>)graph.clone();
-			batch_greedy(graph2, 10);
-			
-			System.out.println("PATH SCREENING");
-			graph = (SimpleGraph<Integer, DefaultEdge>)graph.clone();
-			path_screening(graph2, 10);
-			
+            System.out.println("\nAVERAGE SHORTEST PATH: " + averageShortestPaths(graph));
+
+            System.out.println("\n\nGAME 1");
+
             DefaultListenableGraph<Integer, DefaultEdge> lGraph = new DefaultListenableGraph<>(graph);
             Visualizer v = new Visualizer(lGraph);
             v.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             v.setSize(1000, 1000);
             v.setVisible(true);
+
+            SimpleGraph<Integer, DefaultEdge> graph2 = (SimpleGraph<Integer, DefaultEdge>)graph.clone();
+            runGame(1, GREEDY, GREEDY, 5, 5, graph2);
+
+            DefaultListenableGraph<Integer, DefaultEdge> lGraph2 = new DefaultListenableGraph<>(graph2);
+            Visualizer v2 = new Visualizer(lGraph2);
+            v2.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            v2.setSize(1000, 1000);
+            v2.setVisible(true);
+
+            /*
+			System.out.println("\n\nGREEDY");
+			graph2 = (SimpleGraph<Integer, DefaultEdge>)graph.clone();
+			greedy_remove(graph2, 10);
+			
+			System.out.println("\n\nBATCH GREEDY");
+			graph2 = (SimpleGraph<Integer, DefaultEdge>)graph.clone();
+			//batch_greedy_remove(graph2, 10);
+			
+			System.out.println("\n\nPATH SCREENING");
+			graph2 = (SimpleGraph<Integer, DefaultEdge>)graph.clone();
+			path_screening(graph2, 10);
+
+            System.out.println("\n\nGREEDY PATH SCREENING");
+            graph2 = (SimpleGraph<Integer, DefaultEdge>)graph.clone();
+            greedyPathScreening(graph2, 10);
+            */
+        }
+    }
+
+    public static void runGame(int rounds,
+                               int designerAlg,
+                               int adversaryAlg,
+                               int designerAddsNum,
+                               int adversaryRemovesNum,
+                               SimpleGraph<Integer, DefaultEdge> graph){
+        long startTime = System.currentTimeMillis();
+        double avg_old = averageShortestPaths(graph);
+        double round_old = avg_old;
+
+        for(int round = 0; round < rounds; round++){
+            long roundStart = System.currentTimeMillis();
+            boolean osave = output;
+            output = false;
+            switch (designerAlg){
+                case GREEDY:
+                    greedy(graph, designerAddsNum);
+                    break;
+                case BATCH_GREEDY:
+                    batch_greedy(graph, designerAddsNum);
+                    break;
+                case SCREEN:
+                    path_screening(graph, designerAddsNum);
+                    break;
+                case MULTI_SCREEN:
+                    greedyPathScreening(graph, designerAddsNum);
+                    break;
+            }
+
+            switch(adversaryAlg){
+                case GREEDY:
+                    greedy_remove(graph, adversaryRemovesNum);
+                    break;
+            }
+            output = osave;
+
+            double round_new = averageShortestPaths(graph);
+            long roundStop = System.currentTimeMillis();
+            if(output) {
+                System.out.println("Round 1 finished");
+                System.out.println("Old average: " + round_old);
+                System.out.println("New average: " + round_new);
+                System.out.println("Improvement: " + (round_old - round_new));
+                System.out.println("Round time taken: " + (roundStop - roundStart));
+            }
+            round_old = round_new;
+        }
+
+        double avg_new = averageShortestPaths(graph);
+        long stopTime = System.currentTimeMillis();
+        if(output) {
+            System.out.println("\n\nRESULTS");
+            System.out.println("Old average: " + avg_old);
+            System.out.println("New average: " + avg_new);
+            System.out.println("Improvement: " + (avg_old - avg_new));
+            System.out.println("Time taken: " + (stopTime - startTime));
         }
     }
 
     public static void downsampleGraph(Graph<Integer, DefaultEdge> graph) {
         LinkedList<Integer> toRemove = new LinkedList<>();
         for (Integer v : graph.vertexSet()) {
-            if (graph.inDegreeOf(v) < 20) {
+            if (graph.inDegreeOf(v) < 5) {
                 toRemove.add(v);
             }
         }
@@ -76,15 +158,15 @@ public class App {
         }
         for (Integer v : toRemove) {
             graph.removeVertex(v);
+            takeLargestComponent(graph);
+            if(graph.vertexSet().size() <= vertsInGraph) break;
         }
-        takeLargestComponent(graph);
     }
 
     public static void takeLargestComponent(Graph<Integer, DefaultEdge> graph){
         // If graph is disconnected, take only largest connected set
         ConnectivityInspector<Integer, DefaultEdge> connectTest = new ConnectivityInspector<>(graph);
         if (!connectTest.isGraphConnected()) {
-            Integer maxDegreeNode = getMaxNode(graph);
             List<Set<Integer>> sets = connectTest.connectedSets();
             Set<Integer> largestSet = null;
             for (Set<Integer> set : sets) {
@@ -159,10 +241,10 @@ public class App {
             histogram[index]++;
         }
 
-        System.out.println("Num vertices: " + graph.vertexSet().size());
-        System.out.println("Max degree: " + maxDegree);
-        for (int i = 0; i < histogram.length; i++) {
-            System.out.println(((i * maxDegree) / numSlots) + "-" + (((i + 1) * maxDegree) / numSlots) + ":\t" + histogram[i]);
+        if(output) {
+            for (int i = 0; i < histogram.length; i++) {
+                System.out.println(((i * maxDegree) / numSlots) + "-" + (((i + 1) * maxDegree) / numSlots) + ":\t" + histogram[i]);
+            }
         }
         return histogram;
     }
@@ -206,26 +288,110 @@ public class App {
         }
         return best_edge;
     }
+
+    public static DefaultEdge max_existing_edge(Graph<Integer, DefaultEdge> graph){
+        double avg_old = averageShortestPaths(graph);
+        double best_improvement = 0.0;
+        DefaultEdge best_edge = null;
+        for(DefaultEdge e : new LinkedList<DefaultEdge>(graph.edgeSet())) {
+            Integer v1 = graph.getEdgeSource(e);
+            Integer v2 = graph.getEdgeTarget(e);
+            if (v1 < v2) {
+                graph.removeEdge(v1, v2);
+                ConnectivityInspector<Integer, DefaultEdge> connect = new ConnectivityInspector<>(graph);
+                if(connect.isGraphConnected()) {
+                    double avg_new = averageShortestPaths(graph);
+                    double improvement = avg_new - avg_old;
+                    if (improvement > best_improvement) {
+                        best_edge = e;
+                        best_improvement = improvement;
+                    }
+                }
+                graph.addEdge(v1, v2, e);
+            }
+        }
+        return best_edge;
+    }
+
+    public static void greedy_remove(Graph<Integer, DefaultEdge> graph, int k) {
+        long startTime = System.currentTimeMillis();
+        double avg_old = averageShortestPaths(graph);
+        for (int i = 0; i < k; i++) {
+            DefaultEdge e = max_existing_edge(graph);
+            graph.removeEdge(e);
+        }
+        double avg_new = averageShortestPaths(graph);
+        long stopTime = System.currentTimeMillis();
+        if(output) {
+            System.out.println("Old average: "+ avg_old);
+            System.out.println("New average: " + avg_new);
+            System.out.println("Improvement: " + (avg_old - avg_new));
+            System.out.println("Time taken: " + (stopTime - startTime));
+        }
+    }
     
     public static void greedy(Graph<Integer, DefaultEdge> graph, int k) {
     	long startTime = System.currentTimeMillis();
     	double avg_old = averageShortestPaths(graph);
-    	System.out.println("Old average: "+ avg_old);
 		for (int i = 0; i < k; i++) {
 			DefaultEdge e = max_edge(graph);
 			graph.addEdge(graph.getEdgeSource(e), graph.getEdgeTarget(e), e);
 		}
 		double avg_new = averageShortestPaths(graph);
     	long stopTime = System.currentTimeMillis();
-        System.out.println("New average: "+ avg_new);
-        System.out.println("Improvement: " + (avg_old - avg_new));
-        System.out.println("Time taken: " + (stopTime - startTime));
+        if(output) {
+            System.out.println("Old average: "+ avg_old);
+            System.out.println("New average: " + avg_new);
+            System.out.println("Improvement: " + (avg_old - avg_new));
+            System.out.println("Time taken: " + (stopTime - startTime));
+        }
+    }
+
+    public static void batch_greedy_remove(Graph<Integer, DefaultEdge> graph, int k){
+        long startTime = System.currentTimeMillis();
+        double avg_old = averageShortestPaths(graph);
+        TreeMap<Double,DefaultEdge> edges = new TreeMap<Double,DefaultEdge>();
+
+        for(DefaultEdge e : new LinkedList<DefaultEdge>(graph.edgeSet())) {
+            Integer v1 = graph.getEdgeSource(e);
+            Integer v2 = graph.getEdgeTarget(e);
+            if (v1 < v2) {
+                graph.removeEdge(v1, v2);
+                ConnectivityInspector<Integer, DefaultEdge> connect = new ConnectivityInspector<>(graph);
+                if(connect.isGraphConnected()) {
+                    double avg_new = averageShortestPaths(graph);
+
+                    if (edges.size() < k) {
+                        edges.put(avg_new, e);
+                    } else if (avg_new > edges.firstEntry().getKey()) {
+                        edges.pollFirstEntry();
+                        edges.put(avg_new, e);
+                    }
+                }
+                graph.addEdge(v1, v2, e);
+            }
+        }
+
+        System.out.println("Size: " + edges.size());
+
+        while(edges.size() > 0) {
+            DefaultEdge e = edges.pollFirstEntry().getValue();
+            graph.removeEdge(e);
+        }
+
+        double avg_new = averageShortestPaths(graph);
+        long stopTime = System.currentTimeMillis();
+        if(output) {
+            System.out.println("Old average: " + avg_old);
+            System.out.println("New average: " + avg_new);
+            System.out.println("Improvement: " + (avg_old - avg_new));
+            System.out.println("Time taken: " + (stopTime - startTime));
+        }
     }
     
     public static void batch_greedy(Graph<Integer, DefaultEdge> graph, int k){
     	long startTime = System.currentTimeMillis();
     	double avg_old = averageShortestPaths(graph);
-    	System.out.println("Old average: "+ avg_old);
 		TreeMap<Double,DefaultEdge> edges = new TreeMap<Double,DefaultEdge>();
 		
 		for (Integer v1 : graph.vertexSet()) {
@@ -236,8 +402,8 @@ public class App {
                     if (edges.size() < k){
                     	edges.put(avg_new, e);
                     }
-                    else if(avg_new < edges.firstEntry().getKey()){
-                    	edges.pollFirstEntry();
+                    else if(avg_new < edges.lastEntry().getKey()){
+                    	edges.pollLastEntry();
                     	edges.put(avg_new, e);
                     }
                     graph.removeEdge(v1,v2);
@@ -246,22 +412,43 @@ public class App {
         }
 		
 		while(edges.size() > 0) {
-			DefaultEdge e = edges.pollFirstEntry().getValue();
+			DefaultEdge e = edges.pollLastEntry().getValue();
 			graph.addEdge(graph.getEdgeSource(e), graph.getEdgeTarget(e), e);
 		}
 		
 		double avg_new = averageShortestPaths(graph);
     	long stopTime = System.currentTimeMillis();
-        System.out.println("New average: "+ avg_new);
-        System.out.println("Improvement: " + (avg_old - avg_new));
-        System.out.println("Time taken: " + (stopTime - startTime));
+    	if(output) {
+            System.out.println("Old average: " + avg_old);
+            System.out.println("New average: " + avg_new);
+            System.out.println("Improvement: " + (avg_old - avg_new));
+            System.out.println("Time taken: " + (stopTime - startTime));
+        }
+    }
+
+    public static void greedyPathScreening(SimpleGraph<Integer, DefaultEdge> g, int k){
+        long startTime = System.currentTimeMillis();
+        double avg_old = averageShortestPaths(g);
+        boolean ostore = output;
+        output = false;
+        for(int i = 0; i < k; i++){
+            path_screening(g, 1);
+        }
+        output = ostore;
+        double avg_new = averageShortestPaths(g);
+        long stopTime = System.currentTimeMillis();
+        if(output) {
+            System.out.println("Oldest average: " + avg_old);
+            System.out.println("Newest average: " + avg_new);
+            System.out.println("Greedy screening improvement: " + (avg_old - avg_new));
+            System.out.println("Total screening time taken: " + (stopTime - startTime));
+        }
     }
     
     public static void path_screening(SimpleGraph<Integer, DefaultEdge> g, int k) {
     	SimpleGraph<Integer,DefaultEdge> graph = (SimpleGraph<Integer,DefaultEdge>)g.clone();
     	long startTime = System.currentTimeMillis();
     	double avg_old = averageShortestPaths(g);
-    	System.out.println("Old average: "+ avg_old);
     	
     	HashMap<DefaultEdge, Integer> scores = new HashMap<DefaultEdge, Integer>();
     	
@@ -301,14 +488,17 @@ public class App {
     	
     	for (int i = 1; i <= k; i++) {
     		System.out.println(sorted_scores.get(n - i));
-    		DefaultEdge e = sorted_scores.get(i).getKey();
+    		DefaultEdge e = sorted_scores.get(n - i).getKey();
 			g.addEdge(g.getEdgeSource(e), g.getEdgeTarget(e), e);
     	}
 		double avg_new = averageShortestPaths(g);
     	long stopTime = System.currentTimeMillis();
-        System.out.println("New average: "+ avg_new);
-        System.out.println("Improvement: " + (avg_old - avg_new));
-        System.out.println("Time taken: " + (stopTime - startTime));
+    	if(output) {
+            System.out.println("Old average: " + avg_old);
+            System.out.println("New average: " + avg_new);
+            System.out.println("Improvement: " + (avg_old - avg_new));
+            System.out.println("Time taken: " + (stopTime - startTime));
+        }
     }
     
 	public static <K, V extends Comparable<? super V>> List<Map.Entry<K, V>> sortByValue(Map<K, V> map) {
