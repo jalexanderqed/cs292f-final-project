@@ -38,7 +38,7 @@ public class App {
 
             System.out.println("\n\nGAME 1");
 
-            int rounds = 5;
+            int rounds = 20;
             int designerAlg = SCREEN;
             int adversaryAlg = GREEDY;
             int designerAddsNum = 5;
@@ -436,8 +436,6 @@ public class App {
             }
         }
 
-        System.out.println("Size: " + edges.size());
-
         while (edges.size() > 0) {
             DefaultEdge e = edges.pollFirstEntry().getValue();
             graph.removeEdge(e);
@@ -549,7 +547,7 @@ public class App {
         int n = sorted_scores.size();
 
         for (int i = 1; i <= k; i++) {
-            System.out.println(sorted_scores.get(n - i));
+            if(output) System.out.println(sorted_scores.get(n - i));
             DefaultEdge e = sorted_scores.get(n - i).getKey();
             g.addEdge(g.getEdgeSource(e), g.getEdgeTarget(e), e);
         }
