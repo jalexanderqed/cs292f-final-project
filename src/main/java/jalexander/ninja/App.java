@@ -22,6 +22,7 @@ public class App {
     final static int BATCH_GREEDY = 2;
     final static int SCREEN = 3;
     final static int MULTI_SCREEN = 4;
+    final static int RANDOM = 5;
 
     public static void main(String[] args) {
         SimpleGraph<Integer, DefaultEdge> originalGraph = getGraph();
@@ -40,11 +41,11 @@ public class App {
 
             int rounds, designerAlg, adversaryAlg, designerAddsNum, adversaryRemovesNum;
 
-            rounds = 5;
-            designerAlg = SCREEN;
-            adversaryAlg = GREEDY;
-            designerAddsNum = 5;
-            adversaryRemovesNum = 5;
+            rounds = 1;
+            designerAlg = MULTI_SCREEN;
+            adversaryAlg = RANDOM;
+            designerAddsNum = 10;
+            adversaryRemovesNum = 10;
 
             int index = 0;
             File outFile;
@@ -150,6 +151,9 @@ public class App {
                 case MULTI_SCREEN:
                     greedyPathScreening(graph, designerAddsNum);
                     break;
+                case RANDOM:
+                    random_add(graph, designerAddsNum);
+                    break;
             }
 
             if(out != null) {
@@ -161,6 +165,9 @@ public class App {
             switch (adversaryAlg) {
                 case GREEDY:
                     greedy_remove(graph, adversaryRemovesNum);
+                    break;
+                case RANDOM:
+                    random_remove(graph, designerAddsNum);
                     break;
             }
             output = osave;
@@ -377,6 +384,84 @@ public class App {
             }
         }
         return best_edge;
+    }
+
+    public static void random_remove(Graph<Integer, DefaultEdge> graph, int k){
+        long startTime = System.currentTimeMillis();
+        double avg_old = averageShortestPaths(graph);
+        for (int i = 0; i < k; i++) {
+            ConnectivityInspector<Integer, DefaultEdge> connect;
+            DefaultEdge e = null;
+            Integer v1 = null;
+            Integer v2 = null;
+            do {
+                if(e != null){
+                    graph.addEdge(v1, v2, e);
+                }
+                e = getRandomEdge(graph);
+                v1 = graph.getEdgeSource(e);
+                v2 = graph.getEdgeTarget(e);
+                graph.removeEdge(e);
+                connect = new ConnectivityInspector<>(graph);
+            }
+            while(!connect.isGraphConnected());
+        }
+        double avg_new = averageShortestPaths(graph);
+        long stopTime = System.currentTimeMillis();
+        if (output) {
+            System.out.println("Old average: " + avg_old);
+            System.out.println("New average: " + avg_new);
+            System.out.println("Improvement: " + (avg_old - avg_new));
+            System.out.println("Time taken: " + (stopTime - startTime));
+        }
+    }
+
+    public static void random_add(Graph<Integer, DefaultEdge> graph, int k){
+        long startTime = System.currentTimeMillis();
+        double avg_old = averageShortestPaths(graph);
+        for (int i = 0; i < k; i++) {
+            int s = graph.vertexSet().size();
+            Integer v1, v2;
+            do{
+                v1 = getRandomVertex(graph);
+                v2 = getRandomVertex(graph);
+            } while(v1.equals(v2) || graph.containsEdge(v1, v2));
+            graph.addEdge(v1, v2);
+        }
+        double avg_new = averageShortestPaths(graph);
+        long stopTime = System.currentTimeMillis();
+        if (output) {
+            System.out.println("Old average: " + avg_old);
+            System.out.println("New average: " + avg_new);
+            System.out.println("Improvement: " + (avg_old - avg_new));
+            System.out.println("Time taken: " + (stopTime - startTime));
+        }
+    }
+
+    public static DefaultEdge getRandomEdge(Graph<Integer, DefaultEdge> graph){
+        int s = graph.edgeSet().size();
+        int rIndex = (int)(Math.random() * s);
+        int index = 0;
+        for(DefaultEdge edge : graph.edgeSet()){
+            if(rIndex == index){
+                return edge;
+            }
+            index++;
+        }
+        return null;
+    }
+
+    public static Integer getRandomVertex(Graph<Integer, DefaultEdge> graph){
+        int s = graph.vertexSet().size();
+        int rIndex = (int)(Math.random() * s);
+        int index = 0;
+        for(Integer vert : graph.vertexSet()){
+            if(rIndex == index){
+                return vert;
+            }
+            index++;
+        }
+        return null;
     }
 
     public static void greedy_remove(Graph<Integer, DefaultEdge> graph, int k) {
