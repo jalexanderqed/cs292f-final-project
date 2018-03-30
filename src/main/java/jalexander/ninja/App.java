@@ -14,7 +14,7 @@ import java.util.*;
 
 public class App {
     final static String inFileName = "/large_degree.txt";
-    final static int vertsInGraph = 100;
+    final static int vertsInGraph = 50;
 
     static boolean output = true;
 
@@ -40,14 +40,13 @@ public class App {
             int rounds, designerAlg, adversaryAlg, designerAddsNum, adversaryRemovesNum;
             int index;
             File outFile;
-            SimpleGraph<Integer, DefaultEdge> graph2;
 
             System.out.println("\n\nGAME 1: greedy-greedy");
-            rounds = 1;
+            rounds = 10;
             designerAlg = GREEDY;
             adversaryAlg = GREEDY;
-            designerAddsNum = 10;
-            adversaryRemovesNum = 10;
+            designerAddsNum = 5;
+            adversaryRemovesNum = 5;
 
             index = 0;
             do{
@@ -67,120 +66,17 @@ public class App {
                 System.exit(1);
             }
 
-            graph2 = (SimpleGraph<Integer, DefaultEdge>) graph.clone();
+            SimpleGraph<Integer, DefaultEdge> graph1 = (SimpleGraph<Integer, DefaultEdge>) graph.clone();
             try {
                 runGame(rounds, designerAlg, adversaryAlg, designerAddsNum,
-                        adversaryRemovesNum, graph2, outFile);
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-                System.exit(1);
-            }
-
-            System.out.println("\n\nGAME 2: greedy-random");
-            rounds = 1;
-            designerAlg = GREEDY;
-            adversaryAlg = RANDOM;
-            designerAddsNum = 10;
-            adversaryRemovesNum = 10;
-
-            index = 0;
-            do{
-                index++;
-                outFile = getFile( "results_" +
-                        rounds + "_" +
-                        designerAlg + "_" +
-                        adversaryAlg + "_" +
-                        designerAddsNum + "_" +
-                        adversaryRemovesNum + "_" + index + ".csv");
-            } while(outFile.exists());
-
-            try {
-                outFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-                System.exit(1);
-            }
-
-            graph2 = (SimpleGraph<Integer, DefaultEdge>) graph.clone();
-            try {
-                runGame(rounds, designerAlg, adversaryAlg, designerAddsNum,
-                        adversaryRemovesNum, graph2, outFile);
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-                System.exit(1);
-            }
-
-            System.out.println("\n\nGAME 3: batch_breedy-greedy");
-            rounds = 1;
-            designerAlg = BATCH_GREEDY;
-            adversaryAlg = GREEDY;
-            designerAddsNum = 10;
-            adversaryRemovesNum = 10;
-
-            index = 0;
-            do{
-                index++;
-                outFile = getFile( "results_" +
-                        rounds + "_" +
-                        designerAlg + "_" +
-                        adversaryAlg + "_" +
-                        designerAddsNum + "_" +
-                        adversaryRemovesNum + "_" + index + ".csv");
-            } while(outFile.exists());
-
-            try {
-                outFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-                System.exit(1);
-            }
-
-            graph2 = (SimpleGraph<Integer, DefaultEdge>) graph.clone();
-            try {
-                runGame(rounds, designerAlg, adversaryAlg, designerAddsNum,
-                        adversaryRemovesNum, graph2, outFile);
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-                System.exit(1);
-            }
-
-
-            System.out.println("\n\nGAME 4: batch_greedy-random");
-            rounds = 1;
-            designerAlg = BATCH_GREEDY;
-            adversaryAlg = RANDOM;
-            designerAddsNum = 10;
-            adversaryRemovesNum = 10;
-
-            index = 0;
-            do{
-                index++;
-                outFile = getFile( "results_" +
-                        rounds + "_" +
-                        designerAlg + "_" +
-                        adversaryAlg + "_" +
-                        designerAddsNum + "_" +
-                        adversaryRemovesNum + "_" + index + ".csv");
-            } while(outFile.exists());
-
-            try {
-                outFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-                System.exit(1);
-            }
-
-            graph2 = (SimpleGraph<Integer, DefaultEdge>) graph.clone();
-            try {
-                runGame(rounds, designerAlg, adversaryAlg, designerAddsNum,
-                        adversaryRemovesNum, graph2, outFile);
+                        adversaryRemovesNum, graph1, outFile);
             } catch (IOException e) {
                 e.printStackTrace(System.err);
                 System.exit(1);
             }
 
             System.out.println("\n\nGAME 5: screen-greedy");
-            rounds = 1;
+            rounds = 10;
             designerAlg = SCREEN;
             adversaryAlg = GREEDY;
             designerAddsNum = 10;
@@ -204,7 +100,7 @@ public class App {
                 System.exit(1);
             }
 
-            graph2 = (SimpleGraph<Integer, DefaultEdge>) graph.clone();
+            SimpleGraph<Integer, DefaultEdge> graph2 = (SimpleGraph<Integer, DefaultEdge>) graph.clone();
             try {
                 runGame(rounds, designerAlg, adversaryAlg, designerAddsNum,
                         adversaryRemovesNum, graph2, outFile);
@@ -213,43 +109,9 @@ public class App {
                 System.exit(1);
             }
 
-
-            System.out.println("\n\nGAME 6: screen-random");
-            rounds = 1;
-            designerAlg = SCREEN;
-            adversaryAlg = RANDOM;
-            designerAddsNum = 10;
-            adversaryRemovesNum = 10;
-
-            index = 0;
-            do{
-                index++;
-                outFile = getFile( "results_" +
-                        rounds + "_" +
-                        designerAlg + "_" +
-                        adversaryAlg + "_" +
-                        designerAddsNum + "_" +
-                        adversaryRemovesNum + "_" + index + ".csv");
-            } while(outFile.exists());
-
-            try {
-                outFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-                System.exit(1);
-            }
-
-            graph2 = (SimpleGraph<Integer, DefaultEdge>) graph.clone();
-            try {
-                runGame(rounds, designerAlg, adversaryAlg, designerAddsNum,
-                        adversaryRemovesNum, graph2, outFile);
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-                System.exit(1);
-            }
 
             System.out.println("\n\nGAME 7: multi_screen-greedy");
-            rounds = 1;
+            rounds = 10;
             designerAlg = MULTI_SCREEN;
             adversaryAlg = GREEDY;
             designerAddsNum = 10;
@@ -273,134 +135,38 @@ public class App {
                 System.exit(1);
             }
 
-            graph2 = (SimpleGraph<Integer, DefaultEdge>) graph.clone();
+            SimpleGraph<Integer, DefaultEdge> graph3 = (SimpleGraph<Integer, DefaultEdge>) graph.clone();
             try {
                 runGame(rounds, designerAlg, adversaryAlg, designerAddsNum,
-                        adversaryRemovesNum, graph2, outFile);
+                        adversaryRemovesNum, graph3, outFile);
             } catch (IOException e) {
                 e.printStackTrace(System.err);
                 System.exit(1);
             }
 
-
-            System.out.println("\n\nGAME 8: multi_screen-random");
-            rounds = 1;
-            designerAlg = MULTI_SCREEN;
-            adversaryAlg = RANDOM;
-            designerAddsNum = 10;
-            adversaryRemovesNum = 10;
-
-            index = 0;
-            do{
-                index++;
-                outFile = getFile( "results_" +
-                        rounds + "_" +
-                        designerAlg + "_" +
-                        adversaryAlg + "_" +
-                        designerAddsNum + "_" +
-                        adversaryRemovesNum + "_" + index + ".csv");
-            } while(outFile.exists());
-
-            try {
-                outFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-                System.exit(1);
-            }
-
-            graph2 = (SimpleGraph<Integer, DefaultEdge>) graph.clone();
-            try {
-                runGame(rounds, designerAlg, adversaryAlg, designerAddsNum,
-                        adversaryRemovesNum, graph2, outFile);
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-                System.exit(1);
-            }
-
-            System.out.println("\n\nGAME 9: random-greedy");
-            rounds = 1;
-            designerAlg = RANDOM;
-            adversaryAlg = GREEDY;
-            designerAddsNum = 10;
-            adversaryRemovesNum = 10;
-
-            index = 0;
-            do{
-                index++;
-                outFile = getFile( "results_" +
-                        rounds + "_" +
-                        designerAlg + "_" +
-                        adversaryAlg + "_" +
-                        designerAddsNum + "_" +
-                        adversaryRemovesNum + "_" + index + ".csv");
-            } while(outFile.exists());
-
-            try {
-                outFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-                System.exit(1);
-            }
-
-            graph2 = (SimpleGraph<Integer, DefaultEdge>) graph.clone();
-            try {
-                runGame(rounds, designerAlg, adversaryAlg, designerAddsNum,
-                        adversaryRemovesNum, graph2, outFile);
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-                System.exit(1);
-            }
-
-
-            System.out.println("\n\nGAME 10: radom-random");
-            rounds = 1;
-            designerAlg = RANDOM;
-            adversaryAlg = RANDOM;
-            designerAddsNum = 10;
-            adversaryRemovesNum = 10;
-
-            index = 0;
-            do{
-                index++;
-                outFile = getFile( "results_" +
-                        rounds + "_" +
-                        designerAlg + "_" +
-                        adversaryAlg + "_" +
-                        designerAddsNum + "_" +
-                        adversaryRemovesNum + "_" + index + ".csv");
-            } while(outFile.exists());
-
-            try {
-                outFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-                System.exit(1);
-            }
-
-            graph2 = (SimpleGraph<Integer, DefaultEdge>) graph.clone();
-            try {
-                runGame(rounds, designerAlg, adversaryAlg, designerAddsNum,
-                        adversaryRemovesNum, graph2, outFile);
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-                System.exit(1);
-            }
-
-
-
-            if(true) return;
-
-            DefaultListenableGraph<Integer, DefaultEdge> lGraph = new DefaultListenableGraph<>(graph);
-            Visualizer v = new Visualizer(lGraph, "Before");
-            v.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            v.setSize(1000, 1000);
-            v.setVisible(true);
+            DefaultListenableGraph<Integer, DefaultEdge> lGraph1 = new DefaultListenableGraph<>(graph1);
+            Visualizer v1 = new Visualizer(lGraph1, "graph1");
+            v1.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            v1.setSize(1000, 1000);
+            v1.setVisible(true);
 
             DefaultListenableGraph<Integer, DefaultEdge> lGraph2 = new DefaultListenableGraph<>(graph2);
-            Visualizer v2 = new Visualizer(lGraph2, "After");
+            Visualizer v2 = new Visualizer(lGraph2, "graph2");
             v2.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             v2.setSize(1000, 1000);
             v2.setVisible(true);
+
+            DefaultListenableGraph<Integer, DefaultEdge> lGraph3 = new DefaultListenableGraph<>(graph3);
+            Visualizer v3 = new Visualizer(lGraph3, "graph3");
+            v3.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            v3.setSize(1000, 1000);
+            v3.setVisible(true);
+
+            DefaultListenableGraph<Integer, DefaultEdge> lGraph = new DefaultListenableGraph<>(graph);
+            Visualizer v = new Visualizer(lGraph, "original");
+            v.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            v.setSize(1000, 1000);
+            v.setVisible(true);
 
             /*
             System.out.println("\n\nGREEDY");
@@ -497,7 +263,7 @@ public class App {
             }
 
             if (output) {
-                System.out.println("\n\nRound 1 finished");
+                System.out.println("\n\nRound " + round + " finished");
                 System.out.println("Old average: " + round_old);
                 System.out.println("New average: " + round_new);
                 System.out.println("Improvement: " + (round_old - round_new));
